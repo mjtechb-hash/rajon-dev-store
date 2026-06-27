@@ -3,19 +3,30 @@
 import React, { useState, useEffect } from "react";
 import { db } from "./firebase";
 import { ref, onValue } from "firebase/database";
+// প্রিমিয়াম লুকের জন্য Lucide Icons ব্যবহার করা হয়েছে (কোনো ইমোজি নেই)
+import { 
+  Sparkles, 
+  Search, 
+  FolderRpc, 
+  Layers, 
+  Download, 
+  Flame, 
+  Info, 
+  CheckCircle2, 
+  Cpu 
+} from "lucide-react";
 
 export default function HomePage() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("সব অ্যাপ");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
 
-  // ফায়ারবেস থেকে লাইভ ডেটা রিড করা
   useEffect(() => {
     const appsRef = ref(db, "apps");
     const unsubscribe = onValue(appsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // অবজেক্ট ডেটাকে অ্যারেতে রূপান্তর
         const appsList = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
@@ -30,52 +41,66 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // ক্যাটাগরি পিলস
-  const categories = ["সব অ্যাপ", "এআই টুলস", "ভিডিও এডিটর", "মিউজিক", "গেমস", "সোশ্যাল"];
+  const categories = ["All", "ভিডিও এডিটর", "মিউজিক", "এআই টুলস", "গেমস", "সোশ্যাল"];
 
-  // ফিল্টারিং লজিক
-  const filteredApps = activeCategory === "সব অ্যাপ" 
-    ? apps 
-    : apps.filter(app => app.category === activeCategory);
+  // সার্চ এবং ক্যাটাগরি ফিল্টারিং একসাথে
+  const filteredApps = apps.filter((app) => {
+    const matchesCategory = activeCategory === "All" || app.category === activeCategory;
+    const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (app.description && app.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
-    <div className="space-y-12 py-4 animate-fade-in">
+    <div className="space-y-12 py-6 animate-fade-in bg-slate-950 min-h-screen text-slate-100">
       
-      {/* ১. ফিউচারিস্টিক হিরো ব্যানার */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/30 rounded-3xl p-8 md:p-14 border border-slate-800/80 shadow-2xl overflow-hidden group">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-brandGreen/10 rounded-full blur-3xl group-hover:bg-brandGreen/15 transition duration-500 pointer-events-none" />
-        <div className="relative z-10 max-w-2xl space-y-5">
-          <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-brandGreen font-semibold text-xs px-3.5 py-1.5 rounded-full border border-emerald-500/20 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-brandGreen animate-pulse" />
-            লাইভ প্রিমিয়াম স্টোর v2.0
+      {/* ১. কাস্টম ফিউচারিস্টিক হিরো সেকশন */}
+      <section className="relative bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 rounded-3xl p-8 md:p-14 border border-slate-800/60 shadow-2xl overflow-hidden group">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 max-w-2xl space-y-6">
+          <span className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 font-medium text-xs px-4 py-2 rounded-full border border-emerald-500/20 shadow-inner">
+            <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
+            Rajon Dev Store v2.0 • Secure Server
           </span>
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
-            ডাউনলোড করুন সেরা <span className="text-transparent bg-clip-text bg-gradient-to-r from-brandGreen to-emerald-400">মোড APK</span> ও প্রিমিয়াম অ্যাপস
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            ডাউনলোড করুন কাস্টম <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">প্রিমিয়াম অ্যাপস</span> ও মোড ফাইল
           </h1>
           <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-lg">
-            Rajon Dev Store-এ কোনো বিরক্তিকর পপ-আপ অ্যাড বা রিডাইরেক্ট লিঙ্ক নেই। সম্পূর্ণ নিরাপদ ও হাই-স্পিড সার্ভার থেকে সরাসরি ডাউনলোড করুন।
+            সম্পূর্ণ নিরাপদ এবং কাস্টমাইজড হাই-স্পিড ডাউনলোড লিংক। কোনো রিডাইরেক্ট বা বিরক্তিকর পপ-আপ বিজ্ঞাপনের ঝামেলা নেই।
           </p>
+          
+          {/* লাইভ ডাইনামিক সার্চ বার */}
+          <div className="relative max-w-md mt-4 group/search">
+            <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within/search:text-emerald-400 transition-colors" />
+            <input 
+              type="text" 
+              placeholder="আপনার পছন্দের অ্যাপটি সার্চ করুন..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-950/80 pl-12 pr-4 py-3.5 rounded-2xl border border-slate-800 focus:border-emerald-500/60 outline-none text-sm font-medium text-slate-200 transition-all shadow-inner placeholder-slate-600"
+            />
+          </div>
         </div>
       </section>
 
-      {/* ২. গ্লোয়িং ক্যাটাগরি ফিল্টার */}
+      {/* ২. প্রফেশনাল ক্যাটাগরি ফিল্টার */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-          <span className="w-1.5 h-5 bg-brandGreen rounded-full inline-block" />
-          📁 ক্যাটাগরি দিয়ে খুঁজুন
+        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <Layers className="w-4 h-4 text-emerald-500" />
+          ক্যাটাগরি ফিল্টার
         </h2>
-        <div className="flex gap-2.5 overflow-x-auto pb-3 no-scrollbar scroll-smooth">
+        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
           {categories.map((cat, idx) => (
             <button 
               key={idx} 
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 text-xs md:text-sm rounded-full font-semibold border transition-all duration-300 whitespace-nowrap ${
+              className={`px-5 py-2.5 text-xs md:text-sm rounded-xl font-semibold border transition-all duration-300 whitespace-nowrap ${
                 activeCategory === cat
-                  ? 'bg-brandGreen text-slate-950 border-brandGreen shadow-lg shadow-brandGreen/20 scale-105 font-bold' 
-                  : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 border-slate-800 hover:text-slate-200'
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-500 shadow-lg shadow-emerald-500/10 scale-102 font-bold' 
+                  : 'bg-slate-900/80 hover:bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
               }`}
             >
-              {cat}
+              {cat === "All" ? "সব অ্যাপ" : cat}
             </button>
           ))}
         </div>
@@ -84,66 +109,71 @@ export default function HomePage() {
       {/* ৩. লাইভ অ্যাপস ডাইনামিক গ্রিড */}
       <section className="space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
-            <span className="w-1.5 h-5 bg-brandGreen rounded-full inline-block" />
-            🚀 সদ্য আপডেটেড অ্যাপস
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Cpu className="w-4 h-4 text-emerald-500" />
+            সদ্য আপডেটেড অ্যাপস
           </h2>
-          <span className="text-xs text-slate-500 bg-slate-900 px-2.5 py-1 rounded-md border border-slate-800">
-            মোট: {filteredApps.length} টি
+          <span className="text-xs font-bold text-slate-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
+            টোটাল: {filteredApps.length}
           </span>
         </div>
         
         {loading ? (
-          // লোডিং অ্যানিমেশন (শিমার ইফেক্ট)
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          /* প্রিমিয়াম শিমার লোডিং এফেক্ট */
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="bg-slate-900 p-5 rounded-2xl border border-slate-800/50 animate-pulse h-48" />
+              <div key={n} className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800 animate-pulse h-52" />
             ))}
           </div>
         ) : filteredApps.length === 0 ? (
-          // ডাটাবেস খালি থাকলে এই সুন্দর নোটিশটি দেখাবে
-          <div className="text-center py-16 bg-slate-900/30 rounded-2xl border border-dashed border-slate-800 max-w-md mx-auto p-6 space-y-3">
-            <div className="text-3xl">📦</div>
-            <h3 className="text-base font-bold text-slate-300">এখনো কোনো অ্যাপ যুক্ত করা হয়নি!</h3>
+          /* নো ডাটা মেসেজ */
+          <div className="text-center py-20 bg-slate-900/20 rounded-3xl border border-dashed border-slate-800 max-w-md mx-auto p-6 space-y-4">
+            <Info className="w-8 h-8 text-slate-600 mx-auto" />
+            <h3 className="text-base font-bold text-slate-300">কোনো অ্যাপ খুঁজে পাওয়া যায়নি</h3>
             <p className="text-xs text-slate-500">
-              ফায়ারবেস ডাটাবেসে ডেটা ইনপুট দেওয়া মাত্রই অ্যাপগুলো স্বয়ংক্রিয়ভাবে প্রফেশনাল স্টাইলে এখানে ভেসে উঠবে।
+              আপনার সার্চ করা নামটি অথবা ক্যাটাগরি ফায়ারবেস ডেটাবেসে এই মুহূর্তে নেই।
             </p>
           </div>
         ) : (
-          // লাইভ অ্যাপস ডিসপ্লে গ্রিড
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          /* লাইভ অ্যাপস ডিসপ্লে গ্রিড */
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {filteredApps.map((app) => (
               <div 
                 key={app.id} 
-                className="bg-slate-900/50 hover:bg-slate-900 p-4 rounded-2xl border border-slate-800/60 hover:border-brandGreen/40 shadow-md hover:shadow-xl hover:shadow-brandGreen/5 transition-all duration-300 group cursor-pointer flex flex-col justify-between relative transform hover:-translate-y-1"
+                className="bg-slate-900/40 hover:bg-slate-900/90 p-5 rounded-2xl border border-slate-800/80 hover:border-emerald-500/30 shadow-md hover:shadow-2xl hover:shadow-emerald-500/[0.02] transition-all duration-300 group flex flex-col justify-between relative transform hover:-translate-y-1"
               >
                 {app.isTrending && (
-                  <span className="absolute top-3 right-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider z-10">
-                    🔥 MOD
+                  <span className="absolute top-4 right-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-[9px] px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                    <Flame className="w-2.5 h-2.5" />
+                    MOD
                   </span>
                 )}
                 <div>
-                  {/* অ্যাপ আইকন */}
-                  <div className="w-16 h-16 rounded-2xl bg-slate-800 overflow-hidden mb-4 border border-slate-700/40 relative shadow-inner">
+                  {/* কাস্টম অ্যাপ আইকন */}
+                  <div className="w-16 h-16 rounded-2xl bg-slate-800 overflow-hidden mb-4 border border-slate-700/30 relative shadow-inner">
                     <img 
-                      src={app.icon || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=120&auto=format&fit=crop&q=60"} 
+                      src={app.icon || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=150"} 
                       alt={app.name} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
                     />
                   </div>
                   {/* অ্যাপ নেম ও ক্যাটাগরি */}
-                  <h3 className="font-bold text-sm md:text-base text-slate-100 line-clamp-1 group-hover:text-brandGreen transition duration-300">
+                  <h3 className="font-bold text-sm md:text-base text-slate-100 line-clamp-1 group-hover:text-emerald-400 transition duration-300">
                     {app.name}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">{app.category}</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1">{app.category}</p>
                 </div>
 
                 {/* মেটা ইনফো ও ভার্সন */}
-                <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-semibold text-slate-400">
-                  <span className="text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                <div className="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                  <span className="text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     v{app.version || "1.0"}
                   </span>
-                  <span className="text-emerald-400/90">{app.size || "N/A"}</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <Download className="w-3 h-3" />
+                    {app.size || "N/A"}
+                  </span>
                 </div>
               </div>
             ))}
