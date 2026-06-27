@@ -16,14 +16,29 @@ import {
   AlertTriangle 
 } from "lucide-react";
 
+// ভার্সেল বিল্ড অপ্টিমাইজেশন ফিক্স (ফোর্স ডাইনামিক রেন্ডারিং)
+export const dynamic = "force-dynamic";
+
 export default function AppDetailsPage({ params }) {
-  // Next.js App Router-এর নতুন নিয়ম অনুযায়ী params আনর্যাপ করা
-  const unwrappedParams = React.use(params);
-  const appId = unwrappedParams?.id;
-  
+  // params আনর্যাপ করার নিরাপদ ও আধুনিক নিয়ম
+  const [appId, setAppId] = useState(null);
   const [app, setApp] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // প্রথম ইফেক্ট: params থেকে আইডি এক্সট্র্যাক্ট করা
+  useEffect(() => {
+    if (params) {
+      Promise.resolve(params).then((resolvedParams) => {
+        if (resolvedParams?.id) {
+          setAppId(resolvedParams.id);
+        } else {
+          setLoading(false);
+        }
+      });
+    }
+  }, [params]);
+
+  // দ্বিতীয় ইফেক্ট: আইডি অনুযায়ী ফায়ারবেস থেকে লাইভ ডাটা আনা
   useEffect(() => {
     if (!appId) return;
 
@@ -31,6 +46,9 @@ export default function AppDetailsPage({ params }) {
     const unsubscribe = onValue(appRef, (snapshot) => {
       const data = snapshot.val();
       setApp(data);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firebase Read Error:", error);
       setLoading(false);
     });
 
