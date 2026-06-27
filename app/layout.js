@@ -1,34 +1,33 @@
+import { Inter } from "next/font-google";
 import "./globals.css";
+// আমরা মাত্র যে কাস্টম নেভিগেশন বারটি বানিয়েছি, সেটি এখানে ইম্পোর্ট করছি
+import Navbar from "./components/Navbar";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Rajon Dev Store — বাংলাদেশের সেরা মোড APK ও প্রিমিয়াম অ্যাপ স্টোর",
-  description: "নিরাপদ মোড APK ও প্রিমিয়াম অ্যান্ড্রয়েড অ্যাপ সম্পূর্ণ ফ্রিতে ডাউনলোড করুন। রাজোন দেব স্টোর — ফ্রি, ফাস্ট, এবং ১০০% সেফ।",
+  title: "Rajon Dev Store | Premium Apps & MODs",
+  description: "Download secure, high-speed premium applications and customized games without annoying ads.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="bn">
-      <body className="bg-darkBg text-slate-100 min-h-screen">
-        {/* গ্লোবাল হেডার / নেভিগেশন বার */}
-        <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-wider text-brandGreen">
-                Rajon Dev <span className="text-white">Store</span>
-              </span>
-            </div>
-          </div>
-        </header>
-
-        {/* মেইন কনটেন্ট এরিয়া */}
-        <main className="max-w-6xl mx-auto px-4 py-6">
+    <html lang="en">
+      <body className={`${inter.className} bg-slate-950 text-slate-100 min-h-screen flex flex-col`}>
+        
+        {/* গ্লোবাল প্রিমিয়াম হেডার */}
+        <Navbar />
+        
+        {/* মেইন কন্টেন্ট এরিয়া */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-8 py-6">
           {children}
         </main>
-
-        {/* গ্লোবাল ফুটার */}
-        <footer className="border-t border-slate-800 bg-slate-950 py-6 mt-12 text-center text-sm text-slate-500">
-          <p>© {new Date().getFullYear()} Rajon Dev Store. All Rights Reserved.</p>
+        
+        {/* মিনিমাল প্রফেশনাল ফুটার */}
+        <footer className="w-full border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 font-medium">
+          © {new Date().getFullYear()} Rajon Dev Store. All Rights Reserved.
         </footer>
+
       </body>
     </html>
   );
