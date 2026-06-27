@@ -17,8 +17,9 @@ import {
 } from "lucide-react";
 
 export default function AppDetailsPage({ params }) {
-  // Next.js App Router-এ সরাসরি params থেকে unwrapped ID নেওয়া
-  const appId = params?.id;
+  // Next.js App Router-এর নতুন নিয়ম অনুযায়ী params আনর্যাপ করা
+  const unwrappedParams = React.use(params);
+  const appId = unwrappedParams?.id;
   
   const [app, setApp] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -106,7 +107,7 @@ export default function AppDetailsPage({ params }) {
         </a>
       </section>
 
-      {/* টেকনিক্যাল স্পেসিফিকেশন টেবিল (সব কাস্টমাইজড) */}
+      {/* টেকনিক্যাল স্পেসিফিকেশন টেবিল */}
       <section className="bg-slate-900/20 border border-slate-800/60 rounded-3xl p-6 space-y-4">
         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
           <FileCode2 className="w-4 h-4 text-emerald-500" />
