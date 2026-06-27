@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/router";
 import Link from "next/link";
 import { db } from "../../firebase";
 import { ref, onValue } from "firebase/database";
@@ -17,10 +16,9 @@ import {
   AlertTriangle 
 } from "lucide-react";
 
-export default function AppDetailsPage({ params: cryptoParams }) {
-  // Next.js App Router-এ ডাইনামিক আইডি নেওয়ার জন্য
-  const params = React.use(cryptoParams);
-  const appId = params.id;
+export default function AppDetailsPage({ params }) {
+  // Next.js App Router-এ সরাসরি params থেকে unwrapped ID নেওয়া
+  const appId = params?.id;
   
   const [app, setApp] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +73,7 @@ export default function AppDetailsPage({ params: cryptoParams }) {
           {/* অ্যাপ আইকন */}
           <div className="w-24 h-24 bg-slate-800 rounded-3xl overflow-hidden border border-slate-700/40 shadow-xl flex-shrink-0">
             <img 
-              src={app.id === "spotify-premium" ? "https://cdn-icons-png.flaticon.com/512/174/174872.png" : (app.icon || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=300")} 
+              src={appId === "spotify-premium" ? "https://cdn-icons-png.flaticon.com/512/174/174872.png" : (app.icon || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=300")} 
               alt={app.name} 
               className="w-full h-full object-cover"
             />
