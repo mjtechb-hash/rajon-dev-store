@@ -4,11 +4,6 @@ import { useState } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
-export const metadata = {
-  title: 'Contact - Rajon Dev Store',
-  description: 'Contact Rajon Dev Store for support, inquiries, or feedback.',
-}
-
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -22,7 +17,6 @@ export default function ContactPage() {
     e.preventDefault()
     setStatus('সাবমিট করা হচ্ছে...')
     
-    // TODO: Firebase বা Email API যোগ করবেন
     setTimeout(() => {
       setStatus('✅ আপনার বার্তা পাঠানো হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।')
       setFormData({ name: '', email: '', subject: '', message: '' })
