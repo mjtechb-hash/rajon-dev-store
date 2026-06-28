@@ -13,8 +13,13 @@ export default function HomePage() {
     onValue(appsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const appsList = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+        const appsList = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
         setApps(appsList);
+      } else {
+        setApps([]);
       }
     });
   }, []);
