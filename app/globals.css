@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts - Plus Jakarta Sans */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ===== CSS Variables ===== */
+:root {
+  /* Dark Mode (Default) */
+  --global-bg: #050811;
+  --surface-bg: rgba(17, 24, 39, 0.85);
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --brand-start: #8B5CF6;
+  --brand-end: #4F46E5;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --success: #10B981;
+  --danger: #EF4444;
+  --accent-glow: rgba(99, 102, 241, 0.25);
+}
+
+/* Light Mode */
+[data-theme="light"] {
+  --global-bg: #F3F4F6;
+  --surface-bg: rgba(255, 255, 255, 0.9);
+  --text-primary: #1F2937;
+  --text-secondary: #4B5563;
+  --border-light: rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--global-bg);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--global-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-start);
+  border-radius: 10px;
+}
+
+/* ===== Glassmorphism ===== */
+.glass {
+  background: var(--surface-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+}
+
+/* ===== Skeleton Shimmer ===== */
+.shimmer {
+  background: linear-gradient(90deg, var(--surface-bg) 25%, var(--border-light) 50%, var(--surface-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== Bottom Sheet ===== */
+.sheet {
+  animation: sheetSlide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes sheetSlide {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.sheet-close {
+  animation: sheetClose 0.25s ease-in forwards;
+}
+
+@keyframes sheetClose {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+/* ===== Card Press ===== */
+.card-press:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* ===== Body Blur (modal open) ===== */
+.body-blur {
+  filter: blur(12px);
+  transition: filter 0.3s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ===== AdBlock Overlay ===== */
+.adblock-overlay {
+  background: rgba(5, 8, 17, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 9999;
+}
+
+/* ===== Smooth Transitions ===== */
+a, button {
+  transition: all 0.2s ease;
+}
+
+/* ===== Container ===== */
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 600px;
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 800px;
+  }
+}
