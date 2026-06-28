@@ -15,7 +15,7 @@ export default function AppDetailPage() {
   const [app, setApp] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showDownloadSheet, setShowDownloadSheet] = useState(false)
-  const [downloadStep, setDownloadStep] = useState(0) // 0=start, 1=step1, 2=step2, 3=ready
+  const [downloadStep, setDownloadStep] = useState(0)
 
   useEffect(() => {
     const fetchApp = async () => {
@@ -53,7 +53,6 @@ export default function AppDetailPage() {
     fetchApp()
   }, [slug])
 
-  // ডাউনলোড স্টেপ হ্যান্ডলার
   const handleDownloadClick = () => {
     setShowDownloadSheet(true)
     setDownloadStep(1)
@@ -69,7 +68,6 @@ export default function AppDetailPage() {
 
   const handleFinalDownload = () => {
     if (app?.downloadUrl) {
-      // GitHub ডাউনলোড ট্রিক (a.download)
       const a = document.createElement('a')
       a.href = app.downloadUrl
       a.download = `${app.slug || 'app'}.apk`
@@ -104,7 +102,6 @@ export default function AppDetailPage() {
       <Header />
       
       <main className="container py-4">
-        {/* অ্যাপ তথ্য */}
         <div className="text-center">
           <div className="w-24 h-24 rounded-2xl bg-white/5 mx-auto overflow-hidden">
             <img src={app.logoUrl || '/icon-192x192.png'} alt={app.nameBn} className="w-full h-full object-cover" />
@@ -112,7 +109,6 @@ export default function AppDetailPage() {
           <h1 className="text-xl font-bold mt-3">{app.nameBn || app.nameEn}</h1>
           <p className="text-sm text-text-secondary">v{app.version || '1.0'}</p>
           
-          {/* MOD ট্যাগ */}
           <div className="flex flex-wrap justify-center gap-2 mt-2">
             {app.modTags?.map((tag, i) => (
               <span key={i} className="px-3 py-1 bg-brand-start/20 text-brand-start rounded-full text-xs">
@@ -121,7 +117,6 @@ export default function AppDetailPage() {
             ))}
           </div>
           
-          {/* রেটিং */}
           <div className="flex items-center justify-center gap-1 mt-3">
             <span className="text-yellow-400">⭐</span>
             <span>{app.rating || 4.5}</span>
@@ -129,7 +124,6 @@ export default function AppDetailPage() {
           </div>
         </div>
 
-        {/* ডাউনলোড বাটন */}
         <button
           onClick={handleDownloadClick}
           className="w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-brand-start to-brand-end text-white font-bold text-lg shadow-lg shadow-brand-start/30 active:scale-95 transition"
@@ -137,7 +131,6 @@ export default function AppDetailPage() {
           📥 ডাউনলোড করুন
         </button>
 
-        {/* বিবরণ */}
         <div className="mt-6 space-y-4">
           <div className="glass rounded-xl p-4">
             <h2 className="font-bold mb-2">📝 বিবরণ</h2>
@@ -163,17 +156,8 @@ export default function AppDetailPage() {
             </div>
           </div>
         </div>
-
-        {/* অন্যান্য অ্যাপস (Related) - ঐচ্ছিক */}
-        <div className="mt-6">
-          <h2 className="font-bold mb-3">📱 অন্যান্য অ্যাপস</h2>
-          <div className="text-center text-text-secondary text-sm">
-            <p>শীঘ্রই আসছে...</p>
-          </div>
-        </div>
       </main>
 
-      {/* ===== ডাউনলোড বটম শীট ===== */}
       {showDownloadSheet && (
         <>
           <div 
@@ -195,12 +179,10 @@ export default function AppDetailPage() {
               <p className="text-sm text-text-secondary">v{app.version || '1.0'}</p>
             </div>
 
-            {/* Monetag Ad placeholder */}
             <div className="bg-white/5 rounded-xl p-2 min-h-[50px] flex items-center justify-center text-xs text-text-secondary mb-4">
               📢 Monetag Ad (Loading...)
             </div>
 
-            {/* স্টেপ ১ */}
             {downloadStep === 1 && (
               <button
                 onClick={handleStepComplete}
@@ -210,7 +192,6 @@ export default function AppDetailPage() {
               </button>
             )}
 
-            {/* স্টেপ ২ */}
             {downloadStep === 2 && (
               <button
                 onClick={handleStepComplete}
@@ -220,7 +201,6 @@ export default function AppDetailPage() {
               </button>
             )}
 
-            {/* ডাউনলোড রেডি */}
             {downloadStep === 3 && (
               <button
                 onClick={handleFinalDownload}
@@ -230,7 +210,6 @@ export default function AppDetailPage() {
               </button>
             )}
 
-            {/* ক্লোজ */}
             <button
               onClick={() => {
                 setShowDownloadSheet(false)
