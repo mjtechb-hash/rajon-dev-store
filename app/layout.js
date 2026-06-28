@@ -1,4 +1,4 @@
-import { Inter } from "next/font-google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 // আমরা মাত্র যে কাস্টম নেভিগেশন বারটি বানিয়েছি, সেটি এখানে ইম্পোর্ট করছি
 import Navbar from "./components/Navbar";
