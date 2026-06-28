@@ -1,137 +1,237 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useParams, notFound } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { ref, get } from 'firebase/database'
-import Link from 'next/link'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import Link from 'next/link'
 
-export default function AppsPage() {
-  const [apps, setApps] = useState([])
+export default function AppDetailPage() {
+  const params = useParams()
+  const slug = params.slug
+  
+  const [app, setApp] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showDownloadSheet, setShowDownloadSheet] = useState(false)
+  const [downloadStep, setDownloadStep] = useState(0)
 
   useEffect(() => {
-    const fetchApps = async () => {
+    const fetchApp = async () => {
       try {
         const appsRef = ref(db, 'apps')
         const snapshot = await get(appsRef)
         if (snapshot.exists()) {
           const data = snapshot.val()
-          const list = Object.keys(data)
-            .filter(key => data[key].isPublished !== false)
-            .map(key => ({ id: key, ...data[key] }))
-            .sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
-          setApps(list)
+          let foundApp = null
+          let foundId = null
+          
+          for (const [id, appData] of Object.entries(data)) {
+            if (appData.slug === slug && appData.isPublished !== false) {
+              foundApp = appData
+              foundId = id
+              break
+            }
+          }
+          
+          if (foundApp) {
+            setApp({ id: foundId, ...foundApp })
+          } else {
+            notFound()
+          }
+        } else {
+          notFound()
         }
       } catch (error) {
-        console.error('Error fetching apps:', error)
+        console.error('Error fetching app:', error)
+        notFound()
       } finally {
         setLoading(false)
       }
     }
-    fetchApps()
-  }, [])
+    fetchApp()
+  }, [slug])
 
-  // ফিল্টারিং
-  const filteredApps = apps.filter(app => {
-    const matchSearch = app.nameBn?.includes(searchTerm) || 
-                         app.nameEn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         app.modTags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchCategory = selectedCategory === '' || app.category === selectedCategory
-    return matchSearch && matchCategory
-  })
+  // ডাউনলোড হ্যান্ডলার
+  const handleDownloadClick = () => {
+    setShowDownloadSheet(true)
+    setDownloadStep(1)
+  }
 
-  // ইউনিক ক্যাটাগরি লিস্ট
-  const categories = [...new Set(apps.map(app => app.category).filter(Boolean))]
+  const handleStepComplete = () => {
+    if (downloadStep === 1) {
+      setDownloadStep(2)
+    } else if (downloadStep === 2) {
+      setDownloadStep(3)
+    }
+  }
+
+  const handleFinalDownload = () => {
+    if (app?.downloadUrl) {
+      const a = document.createElement('a')
+      a.href = app.downloadUrl
+      a.download = `${app.slug || 'app'}.apk`
+      a.rel = 'noopener noreferrer'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    }
+    setShowDownloadSheet(false)
+    setDownloadStep(0)
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-dark-bg">
         <Header />
         <main className="container py-4">
-          <div className="h-12 glass rounded-xl shimmer mb-4" />
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {[1,2,3,4,5].map(i => <div key={i} className="h-10 w-20 glass rounded-full shimmer flex-shrink-0" />)}
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            {[1,2,3,4,5,6].map(i => <div key={i} className="h-56 glass rounded-xl shimmer" />)}
-          </div>
+          <div className="w-20 h-20 rounded-2xl shimmer mx-auto" />
+          <div className="h-8 w-48 shimmer mx-auto mt-3" />
+          <div className="h-20 w-full shimmer mt-4" />
+          <div className="h-64 w-full shimmer mt-4" />
         </main>
         <Footer />
       </div>
     )
   }
 
+  if (!app) return notFound()
+
   return (
     <div className="min-h-screen bg-dark-bg">
       <Header />
       
       <main className="container py-4">
-        {/* সার্চ বার */}
-        <div className="glass rounded-xl p-3 mb-4">
-          <input
-            type="text"
-            placeholder="🔍 অ্যাপ বা গেম সার্চ করুন..."
-            className="w-full bg-transparent outline-none text-text-primary placeholder-text-secondary"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        {/* ক্যাটাগরি ফিল্টার */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <button
-            onClick={() => setSelectedCategory('')}
-            className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition ${
-              selectedCategory === '' ? 'bg-brand-start text-white' : 'glass text-text-secondary'
-            }`}
-          >
-            সব
-          </button>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition ${
-                selectedCategory === cat ? 'bg-brand-start text-white' : 'glass text-text-secondary'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* অ্যাপস গ্রিড */}
-        {filteredApps.length === 0 ? (
-          <div className="text-center py-12 text-text-secondary">
-            <p className="text-lg">😕 কোনো অ্যাপ খুঁজে পাওয়া যায়নি</p>
+        {/* অ্যাপ তথ্য */}
+        <div className="text-center">
+          <div className="w-24 h-24 rounded-2xl bg-white/5 mx-auto overflow-hidden">
+            <img src={app.logoUrl || '/icon-192x192.png'} alt={app.nameBn} className="w-full h-full object-cover" />
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            {filteredApps.map(app => (
-              <Link href={`/apps/${app.slug}`} key={app.id} className="glass rounded-xl p-3 card-press">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-white/5 flex-shrink-0 overflow-hidden">
-                    <img src={app.logoUrl || '/icon-192x192.png'} alt={app.nameBn} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{app.nameBn || app.nameEn}</p>
-                    <p className="text-xs text-text-secondary truncate">{app.modTags?.[0] || 'MOD'}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-xs text-yellow-400">⭐</span>
-                      <span className="text-xs text-text-secondary">{app.rating || 4.5}</span>
-                      <span className="text-xs text-text-secondary ml-1">• {app.downloadCount || 0} ডাউনলোড</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+          <h1 className="text-xl font-bold mt-3">{app.nameBn || app.nameEn}</h1>
+          <p className="text-sm text-text-secondary">v{app.version || '1.0'}</p>
+          
+          <div className="flex flex-wrap justify-center gap-2 mt-2">
+            {app.modTags?.map((tag, i) => (
+              <span key={i} className="px-3 py-1 bg-brand-start/20 text-brand-start rounded-full text-xs">
+                ✅ {tag}
+              </span>
             ))}
           </div>
-        )}
+          
+          <div className="flex items-center justify-center gap-1 mt-3">
+            <span className="text-yellow-400">⭐</span>
+            <span>{app.rating || 4.5}</span>
+            <span className="text-text-secondary">({app.downloadCount || 0} ডাউনলোড)</span>
+          </div>
+        </div>
+
+        {/* ডাউনলোড বাটন */}
+        <button
+          onClick={handleDownloadClick}
+          className="w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-brand-start to-brand-end text-white font-bold text-lg shadow-lg shadow-brand-start/30 active:scale-95 transition"
+        >
+          📥 ডাউনলোড করুন
+        </button>
+
+        {/* বিবরণ */}
+        <div className="mt-6 space-y-4">
+          <div className="glass rounded-xl p-4">
+            <h2 className="font-bold mb-2">📝 বিবরণ</h2>
+            <div 
+              className="text-sm text-text-secondary space-y-2"
+              dangerouslySetInnerHTML={{ __html: app.descriptionBn || app.descriptionEn || '<p>বিবরণ পাওয়া যায়নি।</p>' }}
+            />
+          </div>
+
+          {app.changelog && (
+            <div className="glass rounded-xl p-4">
+              <h2 className="font-bold mb-2">🔄 কী নতুন?</h2>
+              <p className="text-sm text-text-secondary">{app.changelog}</p>
+            </div>
+          )}
+
+          <div className="glass rounded-xl p-4">
+            <h2 className="font-bold mb-2">ℹ️ তথ্য</h2>
+            <div className="space-y-1 text-sm text-text-secondary">
+              <p>📦 আকার: {app.size || 'অজানা'}</p>
+              <p>🤖 অ্যান্ড্রয়েড: {app.androidMin || '৫.০+'}</p>
+              <p>📂 ক্যাটাগরি: {app.category || 'অন্যান্য'}</p>
+            </div>
+          </div>
+        </div>
       </main>
+
+      {/* ডাউনলোড শীট */}
+      {showDownloadSheet && (
+        <>
+          <div 
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowDownloadSheet(false)
+              setDownloadStep(0)
+            }}
+          />
+          
+          <div className="fixed bottom-0 left-0 right-0 z-50 glass rounded-t-2xl sheet p-4 pb-8">
+            <div className="w-12 h-1 bg-text-secondary/30 rounded-full mx-auto mb-4" />
+            
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-xl bg-white/5 mx-auto mb-2 overflow-hidden">
+                <img src={app.logoUrl || '/icon-192x192.png'} alt={app.nameBn} className="w-full h-full object-cover" />
+              </div>
+              <p className="font-bold">{app.nameBn || app.nameEn}</p>
+              <p className="text-sm text-text-secondary">v{app.version || '1.0'}</p>
+            </div>
+
+            {/* Monetag Ad placeholder */}
+            <div className="bg-white/5 rounded-xl p-2 min-h-[50px] flex items-center justify-center text-xs text-text-secondary mb-4">
+              📢 Monetag Ad (Loading...)
+            </div>
+
+            {/* স্টেপ ১ */}
+            {downloadStep === 1 && (
+              <button
+                onClick={handleStepComplete}
+                className="w-full py-3 rounded-xl bg-brand-start/20 text-brand-start font-bold active:scale-95 transition"
+              >
+                👆 ধাপ ১: অ্যাড দেখুন (৮s)
+              </button>
+            )}
+
+            {/* স্টেপ ২ */}
+            {downloadStep === 2 && (
+              <button
+                onClick={handleStepComplete}
+                className="w-full py-3 rounded-xl bg-brand-start/20 text-brand-start font-bold active:scale-95 transition"
+              >
+                👆 ধাপ ২: যাচাই করুন (৮s)
+              </button>
+            )}
+
+            {/* ডাউনলোড রেডি */}
+            {downloadStep === 3 && (
+              <button
+                onClick={handleFinalDownload}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg shadow-lg shadow-green-500/30 active:scale-95 transition"
+              >
+                ⬇️ ডাউনলোড করুন
+              </button>
+            )}
+
+            {/* ক্লোজ */}
+            <button
+              onClick={() => {
+                setShowDownloadSheet(false)
+                setDownloadStep(0)
+              }}
+              className="w-full mt-3 py-2 text-text-secondary text-sm active:scale-95 transition"
+            >
+              বন্ধ করুন
+            </button>
+          </div>
+        </>
+      )}
 
       <Footer />
     </div>
