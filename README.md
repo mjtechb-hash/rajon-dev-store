@@ -1,1 +1,0 @@
-# rajon-dev-store
